@@ -1,0 +1,124 @@
+<html>
+<head><title>Joel's Jukebox</title>
+  <script src="ui/js/jquery-1.10.2.js"></script>
+  <script src="ui/js/jquery-ui-1.10.4.custom.js"></script>
+<link rel="stylesheet" href="ui/css/smoothness/jquery-ui-1.10.4.custom.css">
+<script src="audiojs/audio.min.js"></script>
+<style type="text/css">
+    body {
+          background-color: #333; color: #bbb; line-height: normal;
+        }
+
+.track-details { clear: both; height: 20px; width: 448px; padding: 1px 6px; background: #eee; color: #222; font-family: monospace; font-size: 11px; line-height: 20px;
+        -webkit-box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.15); -moz-box-shadow: inset 1px 1px 5px rgba(0, 0, 0, 0.15); }
+      .track-details em { font-style: normal; color: #999; }
+
+  .disp {
+                margin: 50px auto 0px auto; padding: 25px 25px 15px 25px;
+                width: 800px; min-width: 800px; overflow: auto;
+                border-left: 1px solid #444; border-top: 1px solid #444;
+                border-right: 1px solid #333; border-bottom: 1px solid #333;
+                background-color: #3d3d3d;
+        }
+  #hidden2 {
+    display:none;
+  }
+  #hidden1 {
+                margin: 50px auto 0px auto; padding: 25px 25px 15px 25px;
+                width: 800px; min-width: 800px; overflow: auto;
+                border-left: 1px solid #444; border-top: 1px solid #444;
+                border-right: 1px solid #333; border-bottom: 1px solid #333;
+                background-color: #3d3d3d;
+                display:none;
+        }
+
+</style>
+<script>
+ var audio=0;
+
+  audiojs.events.ready(function() {
+    var as = audiojs.createAll();
+    audio=as[0];
+  });
+
+ var waitingAmt;
+ var waitingDiv;
+ var waitingAddr;
+ var waiting=false;
+$(function() {
+   $( "#dialog" ).dialog({autoOpen:false,close:function(event,ui) { },
+		width:600,height:300,modal:true}); 
+  });
+
+ function buy(amt,dname) {
+   $.getJSON("doge.php",{'method':'pay','amt':amt},function(addr) {
+    $( "#dialog" ).html("<P>Send " + amt + " dogecoin to:<br>"+addr+"</p><p>Note: It might take 10 seconds or so for the system to register payment</p>");
+    $( "#dialog" ).dialog("open");
+    waitingDiv=dname;
+    waitingAmt=amt;
+    waitingAddr=addr;
+    waiting=true;
+    window.setInterval(test_complete,2000);
+   });
+ }
+ 
+ function test_complete() {
+
+  if(waiting) {
+  $.getJSON("doge.php",{'method':'verify','addr':waitingAddr,modal:true,},
+		function(success) {
+                 if(success==1) {
+			show(waitingDiv);
+                        $( "#dialog" ).dialog("close");
+                        waiting=false;
+                  }               
+		}
+       );
+    
+   }
+ }
+
+ function show(dname) {
+   document.getElementById(dname).style.display='block';
+   audio.play();
+ }
+
+</script>
+</head>
+<body>
+
+<div id="hidden2">
+<audio src="mp3/coin.mp3" preload="none"></audio>
+</div>
+<div class="disp">
+<h2>Welcome to the Jukebox</h2>
+<p>I write songs sometimes. Here's one you can listen to, and download if you like.</p>
+<audio src="mp3/animals.mp3" preload="none"></audio>
+<div class="track-details">Animals -- <a download="animals.mp3" href="mp3/animals.mp3">Download</a></div>
+
+<p>
+If you want to hear and download some more, you can put a
+dogecoin or two in this here jukebox. And through some magic,
+more songs will appear. 
+<input type="button" id="nextbutton" value="Clink!" onclick='buy(1,"hidden1");'/>
+</p>
+</div>
+<div id="hidden1">
+<audio src="mp3/stpat.mp3" preload="none"></audio>
+<div class="track-details">St. Patrick's Day -- <a download="stpat.mp3" href="mp3/stpat.mp3">Download</a></div>
+<br>
+<audio src="mp3/darkness.mp3" preload="none"></audio>
+<div class="track-details">Darkness -- <a download="darkness.mp3" href="mp3/darkness.mp3">Download</a></div>
+<br>
+<audio src="mp3/teeter.mp3" preload="none"></audio>
+<div class="track-details">Teeter totter -- <a download="teeter.mp3" href="mp3/teeter.mp3">Download</a></div>
+<br>
+<audio src="mp3/wheniwake.mp3" preload="none"></audio>
+<div class="track-details">When I wake -- <a download="wheniwake.mp3" href="mp3/wheniwake.mp3">Download</a></div>
+<br>
+</div>
+<div id="dialog" title="Insert Dogecoin">
+</div>
+
+</body>
+</html>
